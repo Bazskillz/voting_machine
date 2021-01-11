@@ -7,6 +7,7 @@
 
 
 from tkinter import *
+from tkinter import messagebox
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 
@@ -43,7 +44,12 @@ def encrypt_with_public(str):
 def construct_vote():  # Create voting struct
     global vote_name, vote_details_record, vote_id_record
 
-    return VoteObject(name=vote_name.get(), vote_id=vote_id_record.get(), vote_record=vote_details_record.get())
+    if vote_name.get() or vote_details_record.get() or vote_id_record.get() != "":
+        return VoteObject(name=vote_name.get(), vote_id=vote_id_record.get(), vote_record=vote_details_record.get())
+    else:
+        messagebox.showerror(title="You have not filled out all fields!",
+                             message="Please check your input fields there are some missing values.")
+        return False
 
 
 def create_vote_package():  # Encrypt voting object for transmission encrypt with public key of the server
