@@ -42,24 +42,25 @@ def encrypt_with_public(str):
 
 
 def construct_vote():  # Create voting struct
-    global vote_name, vote_details_record, vote_id_record
-
-    if vote_name.get() or vote_details_record.get() or vote_id_record.get() != "":
-        return VoteObject(name=vote_name.get(), vote_id=vote_id_record.get(), vote_record=vote_details_record.get())
+    if vote_name.get() and vote_id_record.get() != "" and vote_option_var.get() != 'Selecteer een kandidaat':
+        return VoteObject(name=vote_name.get(), vote_id=vote_id_record.get(), vote_record=vote_option_var.get())
     else:
         messagebox.showerror(title="You have not filled out all fields!",
-                             message="Please check your input fields there are some missing values.")
+                             message="Please check your input fields there are some missing values.".format( ))
         return False
 
 
 def create_vote_package():  # Encrypt voting object for transmission encrypt with public key of the server
-    vote = construct_vote()
-    print(f"A new vote was cast;\n Name: {vote.name}\n vote_identifier: {vote.vote_id}\n"
-          f" vote_decision: {vote.vote_record}\n")
-    vote.encrypt_vote_record()
+    try:
+        vote = construct_vote()
+        print(f"A new vote was cast;\n Name: {vote.name}\n vote_identifier: {vote.vote_id}\n"
+              f" vote_decision: {vote.vote_record}\n")
+        vote.encrypt_vote_record()
 
-    print(f"A new encrypted vote was recorded ;\n Name: {vote.name}\n vote_identifier: {vote.vote_id}\n"
-          f" vote_decision: {vote.vote_record}\n")
+        print(f"A new encrypted vote was recorded ;\n Name: {vote.name}\n vote_identifier: {vote.vote_id}\n"
+              f" vote_decision: {vote.vote_record}\n")
+    except AttributeError:
+        pass
 
 
 # Voter name tkinter logic
@@ -79,9 +80,11 @@ vote_id_entry_box.grid(row=1, column=1)
 # Voter record tkinter logic
 vote_details_label = Label(root, text="Vote decision: ")
 vote_details_label.grid(row=2, column=0)
-vote_details_record = StringVar()  # Variable for saving the vote decision
-vote_details_entry_box = Entry(root, textvariable=vote_details_record)  # Tkinter entry-box for the vote
-vote_details_entry_box.grid(row=2, column=1)
+vote_option_var = StringVar(root)
+vote_option_var.set("Selecteer een kandidaat")
+
+w = OptionMenu(root, vote_option_var, "Donald Trump", "Hill Dawg")
+w.grid(row=2, column=1)
 
 # Submit button tkinter logic
 submit_button = Button(root,  text="Submit vote", command=create_vote_package)  # Submit button to trigger vote_creation
