@@ -1,7 +1,14 @@
 # TODO
 # Lots of things.
 # We need to create a server to receive and process these votes (add voting record to db, logging, verification etc)
-# We need to attach a signature of the sent data to make sure the data is not altered during transfer
+
+# We need to attach a signature of the sent data to make sure the data is not altered during transfer.
+# We can accomplish this by assigning a rsa keypair to the random name generator for each entry.
+# Then when the vote gets cast we add a signature of the vote data using the voter's private-key
+
+#
+
+
 # Pimp the TKinter GUI
 # Cleanup this code lol
 
@@ -24,21 +31,17 @@ class VoteObject:  # class for vote records
         return self.vote_id
 
     def encrypt_vote_record(self):
-        self.name = encrypt_with_public(self.name)
-        self.vote_id = encrypt_with_public(self.vote_id)
-        self.vote_record = encrypt_with_public(self.vote_record)
-        print(self.vote_record)
+        recipient_key = RSA.import_key(open("keys/dummy_rsa_pubkey.pem").read())
+        cipher_rsa = PKCS1_OAEP.new(recipient_key)
+        self.name = cipher_rsa.encrypt(self.name.encode())
+        self.vote_id = cipher_rsa.encrypt(self.vote_id.encode())
+        self.vote_record = cipher_rsa.encrypt(self.vote_record.encode())
+        print(f"A new encrypted vote was recorded ;\n Name: {self.name}\n vote_identifier: {self.vote_id}\n"
+              f" vote_decision: {self.vote_record}\n")
 
 
 def quit_tkinter():
     root.destroy()
-
-
-def encrypt_with_public(str):
-    recipient_key = RSA.import_key(open("keys/frans_rsa_key.pem").read())
-    cipher_rsa = PKCS1_OAEP.new(recipient_key)
-    print(cipher_rsa)
-    return cipher_rsa.encrypt(str.encode())
 
 
 def construct_vote():  # Create voting struct
@@ -57,8 +60,6 @@ def create_vote_package():  # Encrypt voting object for transmission encrypt wit
               f" vote_decision: {vote.vote_record}\n")
         vote.encrypt_vote_record()
 
-        print(f"A new encrypted vote was recorded ;\n Name: {vote.name}\n vote_identifier: {vote.vote_id}\n"
-              f" vote_decision: {vote.vote_record}\n")
     except AttributeError:
         pass
 
